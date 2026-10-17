@@ -1,156 +1,392 @@
-# DocuMind
+# DocuMind — AI-Powered Document Question Answering System
 
-DocuMind is a simple, smart PDF assistant that lets you upload documents and ask questions about them in plain English. It reads the PDF, breaks it into smaller chunks, searches the most relevant parts, and uses a Gemini-powered language model to answer your questions with source-aware responses.
+DocuMind is an AI-powered document question-answering application that enables users to upload PDF documents and ask questions about their content using natural language. It uses Retrieval-Augmented Generation (RAG) to retrieve relevant information from documents and generate context-aware answers with source references.
 
-Think of it as a lightweight document Q&A assistant for notes, study material, reports, and other PDF-based content.
+Built using Python, FastAPI, Streamlit, ChromaDB, Sentence Transformers, and Google's Gemini API, DocuMind combines semantic search with large language models to make document exploration more efficient and accessible.
 
-## What this project does
+## Table of Contents
 
-- Upload PDF files from the browser
-- Extract text from the document
-- Split the content into searchable chunks
-- Store the chunks in a local vector database
-- Find the most relevant passages for a question
-- Answer using a Gemini LLM with citations/sources
-- Keep track of multiple documents and document-specific queries
+* [Overview](#overview)
+* [Key Features](#key-features)
+* [How It Works](#how-it-works)
+* [Technology Stack](#technology-stack)
+* [Project Structure](#project-structure)
+* [Getting Started](#getting-started)
+* [Usage](#usage)
+* [API Documentation](#api-documentation)
+* [Example Use Cases](#example-use-cases)
+* [AI-Assisted Development](#ai-assisted-development)
+* [Limitations](#limitations)
+* [Future Improvements](#future-improvements)
+* [Security Considerations](#security-considerations)
+* [Contributing](#contributing)
+* [License](#license)
+* [Author](#author)
 
-## Tech stack
+## Overview
 
-- Python
-- FastAPI
-- PyMuPDF for PDF extraction
-- SentenceTransformers for embeddings
-- ChromaDB for vector search
-- Google Gemini API for generation
-- HTML/CSS/JS frontend
+Finding specific information in lengthy PDF documents can be time-consuming. Traditional keyword-based searches may fail to identify relevant information when a user's question differs from the wording used in the original document.
 
-## Project structure
+DocuMind addresses this challenge through Retrieval-Augmented Generation.
 
-- `app.py` — FastAPI server and routes
-- `rag.py` — PDF processing, embedding, retrieval, and LLM logic
-- `static/index.html` — web interface
-- `uploads/` — uploaded PDFs
-- `db/` — ChromaDB storage
+The application processes uploaded PDF documents, divides their content into smaller text chunks, generates vector embeddings, and stores them in a vector database. When a user asks a question, the system retrieves relevant passages and supplies them as context to a large language model to generate an answer.
 
-## Prerequisites
+The application also uses document metadata to help users identify the sources associated with retrieved information.
 
-Before running the app, make sure you have:
+## Key Features
 
-- Python 3.10+
-- A working virtual environment
-- A Gemini API key
+* **PDF Document Processing:** Extract text from uploaded PDF documents.
+* **Natural Language Question Answering:** Ask questions about document content using everyday language.
+* **Retrieval-Augmented Generation:** Retrieve relevant document passages before generating answers.
+* **Semantic Search:** Identify relevant content using vector embeddings rather than relying exclusively on exact keyword matches.
+* **Vector Database Integration:** Store and retrieve document embeddings using ChromaDB.
+* **Source References:** Use document filenames and page metadata to help users locate relevant information.
+* **LLM Integration:** Generate context-aware responses using Google's Gemini API.
+* **Interactive User Interface:** Upload documents and interact with the application through Streamlit.
+* **REST API:** Expose backend functionality through FastAPI.
+* **Modular Architecture:** Separate the frontend, backend, and RAG processing logic.
 
-## Setup
+## How It Works
 
-1. Open the project folder.
-2. Create and activate a virtual environment:
+DocuMind follows a Retrieval-Augmented Generation pipeline.
+
+```text
+                 PDF Document
+                       |
+                       v
+               Text Extraction
+                       |
+                       v
+                 Text Chunking
+                       |
+                       v
+              Embedding Generation
+                       |
+                       v
+              Store in ChromaDB
+                       |
+                       v
+                User's Question
+                       |
+                       v
+             Semantic Retrieval
+                       |
+                       v
+            Retrieve Relevant Chunks
+                       |
+                       v
+           Context + Question to Gemini
+                       |
+                       v
+              Generate an Answer
+                       |
+                       v
+            Answer with Source References
+```
+
+### 1. Document Ingestion
+
+The application accepts PDF documents and extracts their text using PyMuPDF.
+
+### 2. Text Chunking
+
+The extracted text is divided into smaller, overlapping chunks to support efficient retrieval while preserving relevant context.
+
+### 3. Embedding Generation
+
+Sentence Transformers converts text chunks into vector embeddings that represent their semantic meaning.
+
+### 4. Vector Storage
+
+The embeddings and associated metadata are stored in ChromaDB.
+
+### 5. Semantic Retrieval
+
+When a user submits a question, the system retrieves relevant document chunks using vector similarity search.
+
+### 6. Answer Generation
+
+The retrieved passages and the user's question are passed to Google's Gemini API to generate an answer based on the supplied context.
+
+### 7. Source References
+
+Document metadata, including filenames and page numbers, can be used to help users identify the source passages associated with retrieved information.
+
+## Technology Stack
+
+| Technology            | Purpose                              |
+| --------------------- | ------------------------------------ |
+| Python                | Core programming language            |
+| FastAPI               | Backend REST API                     |
+| Streamlit             | Interactive frontend                 |
+| PyMuPDF               | PDF text extraction                  |
+| Sentence Transformers | Text embedding generation            |
+| ChromaDB              | Vector storage and similarity search |
+| Google Gemini API     | Context-aware answer generation      |
+| Uvicorn               | ASGI server for running FastAPI      |
+| Git                   | Version control                      |
+| GitHub                | Source code hosting                  |
+
+## Project Structure
+
+```text
+DocuMind/
+|
+├── app.py                 # Streamlit frontend
+├── main.py                # FastAPI backend
+├── rag.py                 # RAG pipeline and document processing
+├── requirements.txt       # Python dependencies
+├── README.md              # Project documentation
+└── .gitignore             # Files excluded from version control
+```
+
+This structure describes the primary application files. Additional files or directories may exist in the repository.
+
+## Getting Started
+
+Follow the steps below to set up DocuMind locally.
+
+### Prerequisites
+
+Before starting, ensure that you have:
+
+* Python installed in a version compatible with the project dependencies.
+* Git installed on your system.
+* A Google Gemini API key.
+* An internet connection for accessing the Gemini API and installing dependencies.
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/adarshk-ops/DocuMind.git
+```
+
+Navigate to the project directory:
+
+```bash
+cd DocuMind
+```
+
+### 2. Create a Virtual Environment
+
+On Windows:
 
 ```bash
 python -m venv venv
 ```
 
-On Windows:
+Activate the environment using Command Prompt:
 
-```bash
+```cmd
 venv\Scripts\activate
 ```
 
-On macOS/Linux:
+On macOS or Linux:
 
 ```bash
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-3. Install dependencies:
+### 3. Install Dependencies
+
+If `requirements.txt` is present in the repository, install the dependencies using:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-If there is no `requirements.txt` file yet, install the required packages manually:
+If the file is missing, create it using the actual dependencies required by the application before proceeding.
 
-```bash
-pip install fastapi uvicorn python-multipart pymupdf sentence-transformers chromadb python-dotenv google-generativeai
-```
+### 4. Configure Environment Variables
 
-4. Create a `.env` file in the project root and add your Gemini key:
+Create a `.env` file in the project root if the application uses environment variables for configuration.
+
+For example:
 
 ```env
-GEMINI_API_KEY=your_api_key_here
-LLM_NAME=gemini-3.8-flash
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
-## Run the app
+Replace the placeholder with your actual API key.
 
-From the project root:
+The variable name must match the name expected by your application code.
+
+Keep API keys and other secrets out of your source code and public repositories. Ensure that `.env` is included in `.gitignore`.
+
+### 5. Start the Backend
+
+From the project root, run:
 
 ```bash
-python main.py
+uvicorn main:app --reload
 ```
 
-Then open:
+The backend should be available at:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-If needed, you can also run the FastAPI app directly:
+FastAPI's interactive API documentation is generally available at:
 
-```bash
-python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
+```text
+http://127.0.0.1:8000/docs
 ```
 
-## How to use it
+These commands assume that the FastAPI application instance is defined in `main.py` and uses the standard Uvicorn configuration.
 
-1. Open the app in your browser.
-2. Upload a PDF file.
-3. Wait while the PDF is indexed.
-4. Ask a question in the chat box.
-5. View the answer and relevant document references.
+### 6. Start the Frontend
 
-## Features
+Open a second terminal, activate the virtual environment, and run:
 
-- Multi-document PDF handling
-- Intelligent chunk retrieval
-- LLM-based answer generation
-- Query by selected document source
-- Document deletion and history management
-- Local persistent vector database
+```bash
+streamlit run app.py
+```
 
-## API overview
+Open the local URL displayed in the terminal to access the application.
 
-The app exposes a few backend endpoints:
+If the frontend communicates with the FastAPI backend, ensure that its configured backend URL matches the address where the backend is running.
 
-- `GET /` — web interface
-- `GET /status` — app health and document count
-- `POST /upload` — upload a PDF
-- `GET /documents` — list indexed documents
-- `DELETE /documents/{doc_name}` — remove a document
-- `POST /ask` — ask a question against the indexed files
-- `GET /history` — view chat history
-- `DELETE /history` — clear conversation history
+**Note:** Verify the dependency list, environment-variable names, and startup commands against the current source code before publishing the README.
 
-## Notes
+## Usage
 
-- The app uses a local ChromaDB database, so indexed documents persist across runs.
-- If your API key is missing or invalid, the app falls back to a simple stub response instead of crashing.
-- Some PDFs may not be readable if they are scanned images or password-protected.
+After starting the application:
+
+1. Open the Streamlit interface in your browser.
+2. Upload a PDF document.
+3. Allow the application to extract and process the document.
+4. Enter a question related to the uploaded content.
+5. Review the generated answer.
+6. Examine the available source references to locate relevant information in the original document.
+
+For better results, ask clear and specific questions related to the uploaded document.
+
+Answer quality depends on the document's content, retrieval effectiveness, and the language model's interpretation of the supplied context.
+
+## API Documentation
+
+DocuMind uses FastAPI to expose backend functionality.
+
+The available endpoints are defined in `main.py`.
+
+To explore the actual endpoints, request formats, and response schemas, start the backend and visit:
+
+**API Documentation:** http://127.0.0.1:8000/docs
+
+The interactive documentation is generated from the routes registered in the FastAPI application.
+
+## Example Use Cases
+
+### Academic Learning
+
+Upload textbooks, lecture notes, and study materials to find explanations of specific concepts.
+
+### Research Assistance
+
+Retrieve relevant information from research papers and technical publications.
+
+### Technical Documentation
+
+Ask questions about software documentation, technical manuals, and engineering guides.
+
+### Business Documents
+
+Search reports, policies, and other text-based PDF documents for relevant information.
+
+### Exam Preparation
+
+Use academic materials to review definitions, concepts, and explanations before examinations.
+
+These are potential use cases for the application, rather than claims that every specialized workflow has been implemented.
+
+## AI-Assisted Development
+
+AI tools were used during the development of DocuMind to assist with project structuring, code review, debugging, testing, and monitoring application behavior.
+
+AI assistance helped identify potential issues, improve code organization, evaluate implementation approaches, and streamline the development workflow.
+
+AI-generated suggestions were reviewed and incorporated where appropriate as part of the iterative development process.
+
+The project combines AI-assisted development practices with the implementation of document processing, semantic retrieval, backend APIs, and LLM integration.
+
+## Limitations
+
+DocuMind is an AI-powered document question-answering application. Its responses should be checked against the original documents when accuracy is important.
+
+Potential limitations include:
+
+* Relevant information may not always be retrieved.
+* Answers may be incomplete when the retrieved context is insufficient.
+* Language models can generate inaccurate or unsupported statements.
+* Source references must be verified to ensure they support the corresponding answers.
+* Scanned PDFs may require OCR if their text cannot be extracted directly.
+* Large documents may require additional processing time and computational resources.
+* Gemini API access may be subject to usage limits, availability constraints, and pricing.
+* Retrieval quality depends on document structure, chunking, embeddings, and search configuration.
+
+Retrieval-Augmented Generation can help ground responses in document content, but it does not guarantee factual accuracy.
+
+## Future Improvements
+
+Potential enhancements include:
+
+* Improved document indexing and replacement handling.
+* Document deletion and lifecycle management.
+* Better retrieval strategies and configurable similarity thresholds.
+* Hybrid search combining semantic retrieval with keyword search.
+* Reranking of retrieved passages.
+* Clickable citations with PDF page navigation.
+* Highlighting relevant passages in source documents.
+* Improved handling of questions that cannot be answered from the available context.
+* Persistent, session-specific conversation history.
+* Automated tests for document processing, retrieval, and answer generation.
+* Evaluation of retrieval quality, answer correctness, and citation accuracy.
+* Improved error handling and application logging.
+* Docker-based deployment.
+* Enhanced interface design and document previews.
+
+These items are proposed improvements and should not be interpreted as existing features unless they have been implemented.
+
+## Security Considerations
+
+When running or deploying DocuMind:
+
+* Keep API keys and other secrets outside version control.
+* Exclude environment files and sensitive local data using `.gitignore`.
+* Validate uploaded files before processing them.
+* Enforce appropriate file-size and resource limits.
+* Handle malformed or corrupted documents safely.
+* Avoid exposing internal file paths through public endpoints.
+* Implement session isolation and access controls before supporting multiple users.
+* Review the privacy implications of sending document content to an external language-model API.
+
+Avoid uploading confidential or sensitive documents unless the application's data-handling and privacy requirements have been evaluated.
+
+## Contributing
+
+Contributions, suggestions, and bug reports are welcome.
+
+To propose a change:
+
+1. Fork the repository.
+2. Create a separate branch for your changes.
+3. Implement and test the improvement.
+4. Submit a pull request explaining the changes.
+
+For bug reports, include the steps to reproduce the issue, the expected behavior, and the observed behavior.
 
 ## License
 
-This project is intended for local learning and personal use. Add a license if you plan to share or publish it.
+The applicable license should be specified here.
 
-## Future improvements
+If the repository does not already contain a license, select an appropriate open-source license before publishing one. Until a license is added, do not assume that the project is distributed under an open-source license.
 
-- Better UI polish and responsiveness
-- Better citation formatting
-- PDF page highlighting for answer references
-- User authentication
-- Support for larger document collections
-- Deployment-ready setup for cloud hosting
+## Author
 
-## Final note
+**PARTHA**
 
-DocuMind is a practical, beginner-friendly RAG project that demonstrates how AI can answer questions from PDF documents using retrieval and generation together. It is a great base for learning, experimentation, and further customization.
+GitHub: https://github.com/adarshk-ops
 
-This project was restructured with the help of AI to improve clarity, organization, and maintainability.
+Project Repository: https://github.com/adarshk-ops/DocuMind
